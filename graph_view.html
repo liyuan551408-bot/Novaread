@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Neural Graph View</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <style>
+        body {
+            background-color: #2E3440; /* 与 NordDark 主题一致的深色背景 */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        #cy {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div id="cy"></div>
+
+<script>
+    var cy = cytoscape({
+        container: document.getElementById('cy'),
+
+        // 科幻霓虹风格样式定义
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#88C0D0', // 节点颜色 (Nord Cyan)
+                    'label': 'data(label)',
+                    'color': '#ECEFF4', // 文字颜色
+                    'font-size': '12px',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'width': 'label', // 宽度自适应文字
+                    'height': 'label',
+                    'padding': '8px',
+                    'shape': 'round-rectangle',
+                    'border-width': 1,
+                    'border-color': '#81A1C1',
+                    'text-wrap': 'wrap',
+                    'text-max-width': '80px'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#BF616A', // 连线颜色 (Nord Red)
+                    'target-arrow-color': '#BF616A',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'label': 'data(label)',
+                    'color': '#D8DEE9',
+                    'font-size': '10px',
+                    'text-rotation': 'autorotate',
+                    'text-background-color': '#2E3440',
+                    'text-background-opacity': 1,
+                    'text-background-padding': '2px'
+                }
+            }
+        ],
+        // 默认布局算法
+        layout: {
+            name: 'cose', // 使用力导向布局 (Cola/Cose) 自动散开节点
+            animate: true,
+            padding: 30
+        }
+    });
+
+    // 供 Java 调用的核心函数：接收 JSON 数据并渲染
+    function renderNewGraph(jsonData) {
+        cy.elements().remove(); // 清空旧图谱
+        try {
+            // 解析 Java 传来的 JSON 字符串并添加元素
+            cy.add(JSON.parse(jsonData));
+            // 重新运行布局算法以适应新数据
+            cy.layout({
+                name: 'cose',
+                animate: true,
+                idealEdgeLength: 100,
+                nodeOverlap: 20,
+                refresh: 20,
+                fit: true,
+                padding: 30,
+                randomize: false,
+                componentSpacing: 100,
+                nodeRepulsion: 400000,
+                edgeElasticity: 100,
+                nestingFactor: 5,
+            }).run();
+        } catch (e) {
+            console.error("图谱数据解析失败:", e);
+            alert("神经数据损坏，无法具象化。");
+        }
+    }
+</script>
+</body>
+</html>
