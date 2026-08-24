@@ -220,6 +220,22 @@ The main application class is:
 com.scifi.reader.GuiMain
 ```
 
+### API Configuration
+
+AI features require a Zhipu API key. Configure it with the `ZHIPU_API_KEY` environment variable before running the app.
+
+On Windows PowerShell:
+
+```powershell
+setx ZHIPU_API_KEY "your-api-key"
+```
+
+For local development, you can also create an ignored `.env` file in the project root:
+
+```text
+ZHIPU_API_KEY=your-api-key
+```
+
 ## Local Books
 
 NovaRead imports local `.txt` books from the project's `book` directory.

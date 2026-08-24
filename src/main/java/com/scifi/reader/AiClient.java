@@ -3,14 +3,21 @@ package com.scifi.reader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 
 public class AiClient {
-    private static final String API_KEY = "98fd6c3bdc8c4c2083a79511543c1e3c.936dAWvK2v2ULpNo";
+    private static final String API_KEY_ENV = "ZHIPU_API_KEY";
+    private static final String API_KEY = loadApiKey();
     private static final String CHAT_MODEL = "glm-4-flash";
     private static final String CHAT_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
@@ -24,6 +31,10 @@ public class AiClient {
     // Calls the AI chat endpoint and returns plain text.
     public static String callAi(String systemPrompt, String userPrompt) {
         try {
+            if (isBlank(API_KEY)) {
+                return "AI request failed: missing ZHIPU_API_KEY environment variable.";
+            }
+
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("model", CHAT_MODEL);
             JsonArray messages = new JsonArray();
@@ -68,6 +79,7 @@ public class AiClient {
     public static double[] getEmbedding(String text) {
         if (text == null || text.trim().isEmpty()) return new double[0];
         if (text.length() > 1500) text = text.substring(0, 1500);
+        if (isBlank(API_KEY)) return new double[0];
 
         try {
             JsonObject requestBody = new JsonObject();
@@ -128,6 +140,51 @@ public class AiClient {
         text = text.replaceAll("[\\u3010\\u3011\\u300E\\u300F\\u3016\\u3017]", "");
         text = text.replaceAll("[\\u2605\\u2606\\u25CF\\u25A0\\u25C6\\u25B3\\u25BC\\u25B2]", "");
         return text.trim();
+    }
+
+    private static String loadApiKey() {
+        String value = System.getenv(API_KEY_ENV);
+        if (!isBlank(value)) return value.trim();
+        return readApiKeyFromDotEnv();
+    }
+
+    private static String readApiKeyFromDotEnv() {
+        Path envPath = Paths.get(".env");
+        if (!Files.isRegularFile(envPath)) return "";
+
+        try {
+            List<String> lines = Files.readAllLines(envPath, StandardCharsets.UTF_8);
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
+
+                int separator = trimmed.indexOf('=');
+                if (separator <= 0) continue;
+
+                String key = trimmed.substring(0, separator).trim();
+                if (!API_KEY_ENV.equals(key)) continue;
+
+                return stripOptionalQuotes(trimmed.substring(separator + 1).trim());
+            }
+        } catch (IOException ignored) {
+            return "";
+        }
+        return "";
+    }
+
+    private static String stripOptionalQuotes(String value) {
+        if (value.length() >= 2) {
+            char first = value.charAt(0);
+            char last = value.charAt(value.length() - 1);
+            if ((first == '"' && last == '"') || (first == '\'' && last == '\'')) {
+                return value.substring(1, value.length() - 1).trim();
+            }
+        }
+        return value;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     // Fast bidirectional translation.
