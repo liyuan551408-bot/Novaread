@@ -13,7 +13,7 @@ import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 /**
- * 欢迎界面，带有脉冲动画和进入按钮
+ * Welcome screen with pulse animation and an enter button
  */
 public class WelcomeScreen {
     private GuiMain app;
@@ -33,7 +33,7 @@ public class WelcomeScreen {
 
         Label title = new Label("NovaRead");
         title.setStyle("-fx-font-size: 64px; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
-        Label subtitle = new Label("基于AI驱动的智能深度阅读与知识学习系统 ");
+        Label subtitle = new Label("AI-powered deep reading and knowledge learning system");
         subtitle.setStyle("-fx-font-size: 24px; -fx-text-fill: #94a3b8;");
 
         FadeTransition pulse = new FadeTransition(Duration.seconds(1.5), mainIcon);
@@ -43,7 +43,7 @@ public class WelcomeScreen {
         pulse.setAutoReverse(true);
         pulse.play();
 
-        Button enterBtn = new Button("建立神经连接 (Enter)", new FontIcon("fas-link"));
+        Button enterBtn = new Button("Enter NovaRead", new FontIcon("fas-link"));
         enterBtn.getStyleClass().addAll(Styles.ACCENT, Styles.LARGE);
         enterBtn.setStyle("-fx-font-size: 18px; -fx-padding: 15px 40px;");
 

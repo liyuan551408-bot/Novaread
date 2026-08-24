@@ -12,7 +12,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.List;
 
 /**
- * 背单词界面，基于SRS间隔重复算法进行选择题考核
+ * Vocabulary review screen using SRS interval repetition and multiple-choice quizzes
  */
 public class VocabReviewScreen {
     private GuiMain app;
@@ -30,17 +30,17 @@ public class VocabReviewScreen {
         topBar.setPadding(new Insets(20, 30, 20, 30));
         topBar.setStyle("-fx-background-color: #0f172a; -fx-border-color: transparent transparent #334155 transparent; -fx-border-width: 1px;");
 
-        Button backBtn = new Button("返回书架", new FontIcon("fas-chevron-left"));
+        Button backBtn = new Button("Back to Library", new FontIcon("fas-chevron-left"));
         backBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER);
         backBtn.setOnAction(e -> app.navigateTo(new LibraryScreen(app).build()));
 
-        Label title = new Label("神经元考核 ", new FontIcon("fas-microchip"));
+        Label title = new Label("Vocabulary Review", new FontIcon("fas-microchip"));
         title.getStyleClass().add(Styles.TITLE_2);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button refreshBtn = new Button("刷新题库", new FontIcon("fas-sync"));
+        Button refreshBtn = new Button("Refresh Quiz Bank", new FontIcon("fas-sync"));
         refreshBtn.getStyleClass().add(Styles.SUCCESS);
 
         topBar.getChildren().addAll(backBtn, title, spacer, refreshBtn);
@@ -60,7 +60,7 @@ public class VocabReviewScreen {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    String status = item.urgency >= 1.0 ? "🔴" : "🟢";
+                    String status = item.urgency >= 1.0 ? "[Due]" : "[OK]";
                     setText(status + " " + item.word);
                     setTextFill(Color.web("#f8fafc"));
                 }
@@ -72,7 +72,7 @@ public class VocabReviewScreen {
         detailsBox.setStyle("-fx-background-color: #0f172a;");
         detailsBox.setAlignment(Pos.TOP_CENTER);
 
-        Label wordLabel = new Label("请选择左侧词条");
+        Label wordLabel = new Label("Select a word on the left");
         wordLabel.setFont(Font.font("Segoe UI", 48));
         wordLabel.setTextFill(Color.web("#38bdf8"));
 
@@ -93,7 +93,7 @@ public class VocabReviewScreen {
         }
         optionsBox.getChildren().addAll(optA, optB, optC, optD);
 
-        Button submitBtn = new Button("提交校验", new FontIcon("fas-check-circle"));
+        Button submitBtn = new Button("Submit Answer", new FontIcon("fas-check-circle"));
         submitBtn.getStyleClass().addAll(Styles.ACCENT, Styles.LARGE);
 
         Label feedbackLabel = new Label();
@@ -112,7 +112,7 @@ public class VocabReviewScreen {
             if (selectedIndex >= 0 && selectedIndex < listView.getItems().size()) {
                 listView.getSelectionModel().select(selectedIndex);
             }
-            feedbackLabel.setText("题库已刷新。");
+            feedbackLabel.setText("Quiz bank refreshed.");
             feedbackLabel.setTextFill(Color.web("#a3be8c"));
         });
 
@@ -121,16 +121,16 @@ public class VocabReviewScreen {
                 wordLabel.setText(newVal.word);
                 toggleGroup.selectToggle(null);
                 feedbackLabel.setText("");
-                submitBtn.setText("提交校验");
+                submitBtn.setText("Submit Answer");
                 if (submitBtn.getGraphic() instanceof FontIcon) {
                     ((FontIcon) submitBtn.getGraphic()).setIconLiteral("fas-check-circle");
                 }
                 optionsBox.setDisable(false);
 
-                if (newVal.optA == null || newVal.optA.isEmpty() || newVal.optA.contains("生成失败")) {
+                if (newVal.optA == null || newVal.optA.isEmpty() || newVal.optA.contains("generation failed")) {
                     optionsBox.setVisible(false);
                     submitBtn.setVisible(false);
-                    feedbackLabel.setText("选项题库正在后台生成中...\n(如果等待超过 5 秒，请点击右上角的【刷新题库】按钮重试)");
+                    feedbackLabel.setText("Quiz options are being generated in the background...\nIf this takes more than 5 seconds, click Refresh Quiz Bank and try again.");
                     feedbackLabel.setTextFill(Color.web("#fbbf24"));
                 } else {
                     optA.setText(newVal.optA);
@@ -147,14 +147,14 @@ public class VocabReviewScreen {
         });
 
         submitBtn.setOnAction(e -> {
-            if ("下一词".equals(submitBtn.getText())) {
+            if ("Next Word".equals(submitBtn.getText())) {
                 listView.getItems().setAll(DatabaseManager.getFlashcards());
                 if (!listView.getItems().isEmpty()) {
                     listView.getSelectionModel().select(0);
                 } else {
                     submitBtn.setVisible(false);
                     optionsBox.setVisible(false);
-                    wordLabel.setText("考核已清空");
+                    wordLabel.setText("Review queue is empty");
                     feedbackLabel.setText("");
                 }
                 return;
@@ -164,14 +164,14 @@ public class VocabReviewScreen {
             if (selected == null) return;
             RadioButton selectedRb = (RadioButton) toggleGroup.getSelectedToggle();
             if (selectedRb == null) {
-                feedbackLabel.setText("请先选择一个选项！");
+                feedbackLabel.setText("Please choose an option first.");
                 feedbackLabel.setTextFill(Color.web("#fbbf24"));
                 return;
             }
 
             String userChoice = selectedRb.getText().substring(0, 1).toUpperCase();
 
-            // 兼容数据库脏数据，提取正确答案字母
+            // Extract the answer letter defensively for legacy or dirty data
             String cleanCorrectAns = "A";
             if (currentCorrectAnswer[0] != null) {
                 String temp = currentCorrectAnswer[0].replaceAll("[^A-Da-d]", "");
@@ -184,14 +184,14 @@ public class VocabReviewScreen {
             DatabaseManager.submitReview(selected.word, isCorrect);
 
             if (isCorrect) {
-                feedbackLabel.setText("正确！记忆链路已强化。\n已为您推迟该词的下次考核时间。");
+                feedbackLabel.setText("Correct. Memory strength increased.\nThe next review time has been pushed back.");
                 feedbackLabel.setTextFill(Color.web("#a3be8c"));
             } else {
-                feedbackLabel.setText("错误！突触已断裂。\n正确答案应为：[" + cleanCorrectAns + "]\n记忆已重置，您可以切换到【生词本】查看具体语境。");
+                feedbackLabel.setText("Incorrect.\nThe correct answer is: [" + cleanCorrectAns + "]\nMemory progress has been reset. Open Vocabulary Book to review the context.");
                 feedbackLabel.setTextFill(Color.web("#bf616a"));
             }
 
-            submitBtn.setText("下一词");
+            submitBtn.setText("Next Word");
             if (submitBtn.getGraphic() instanceof FontIcon) {
                 ((FontIcon) submitBtn.getGraphic()).setIconLiteral("fas-arrow-right");
             }

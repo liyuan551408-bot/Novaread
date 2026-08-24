@@ -16,7 +16,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * 书架界面，展示书籍卡片，提供生词本/背单词入口，支持刷新
+ * Library screen with book cards, vocabulary entry points, and refresh support
  */
 public class LibraryScreen {
     private GuiMain app;
@@ -46,21 +46,21 @@ public class LibraryScreen {
         topBar.setPadding(new Insets(20, 30, 20, 30));
         topBar.setStyle("-fx-background-color: #0f172a; -fx-border-color: transparent transparent #334155 transparent; -fx-border-width: 1px;");
 
-        Label libTitle = new Label("我的矩阵书架", new FontIcon("fas-layer-group"));
+        Label libTitle = new Label("My Library Matrix", new FontIcon("fas-layer-group"));
         libTitle.getStyleClass().addAll(Styles.TITLE_2);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button vocabBookBtn = new Button("生词本", new FontIcon("fas-book-open"));
+        Button vocabBookBtn = new Button("Vocabulary Book", new FontIcon("fas-book-open"));
         vocabBookBtn.getStyleClass().add(Styles.ACCENT);
         vocabBookBtn.setOnAction(e -> app.navigateTo(new VocabBookScreen(app).build()));
 
-        Button vocabReviewBtn = new Button("背单词", new FontIcon("fas-brain"));
+        Button vocabReviewBtn = new Button("Review Words", new FontIcon("fas-brain"));
         vocabReviewBtn.getStyleClass().add(Styles.SUCCESS);
         vocabReviewBtn.setOnAction(e -> app.navigateTo(new VocabReviewScreen(app).build()));
 
-        Button refreshBtn = new Button("扫描本地目录", new FontIcon("fas-sync"));
+        Button refreshBtn = new Button("Scan Local Folder", new FontIcon("fas-sync"));
         refreshBtn.getStyleClass().add(Styles.FLAT);
         refreshBtn.setOnAction(e -> {
             DatabaseManager.importBooksFromFolder("book");
@@ -93,7 +93,7 @@ public class LibraryScreen {
         card.setStyle("-fx-background-color: #334155; -fx-background-radius: 10px; -fx-cursor: hand;");
         card.setMaxWidth(160);
 
-        // 创建封面容器（ImageView 或占位符）
+        // Create the cover container, either an ImageView or a placeholder
         ImageView coverView = new ImageView();
         coverView.setFitWidth(130);
         coverView.setFitHeight(180);
@@ -102,7 +102,7 @@ public class LibraryScreen {
         clip.setArcHeight(10);
         coverView.setClip(clip);
 
-        // 优先从数据库加载封面
+        // Load the cover from the database first
         byte[] coverData = DatabaseManager.getCoverData(bookId);
         Image coverImage = null;
         if (coverData != null) {
@@ -110,7 +110,7 @@ public class LibraryScreen {
             coverView.setImage(coverImage);
             card.getChildren().add(coverView);
         } else {
-            // 数据库无封面，尝试从文件系统加载
+            // If the database has no cover, try the file system
             String cleanTitle = DatabaseManager.getBookTitle(bookId);
             File imgJpg = new File("covers/" + cleanTitle + ".jpg");
             File imgPng = new File("covers/" + cleanTitle + ".png");
@@ -118,7 +118,7 @@ public class LibraryScreen {
                 coverImage = new Image(imgJpg.toURI().toString());
                 coverView.setImage(coverImage);
                 card.getChildren().add(coverView);
-                // 异步导入到数据库（可选，提升下次启动速度）
+                // Import into the database asynchronously to speed up the next startup
                 new Thread(() -> DatabaseManager.importCoverFromFile(bookId, "covers/")).start();
             } else if (imgPng.exists()) {
                 coverImage = new Image(imgPng.toURI().toString());
@@ -126,7 +126,7 @@ public class LibraryScreen {
                 card.getChildren().add(coverView);
                 new Thread(() -> DatabaseManager.importCoverFromFile(bookId, "covers/")).start();
             } else {
-                // 无封面，显示占位符
+                // Show a placeholder when no cover exists
                 VBox placeholder = new VBox();
                 placeholder.setAlignment(Pos.CENTER);
                 placeholder.setPrefSize(130, 180);
@@ -145,7 +145,7 @@ public class LibraryScreen {
         titleLabel.setAlignment(Pos.CENTER);
 
         int lastPage = DatabaseManager.getLastReadPage(bookId);
-        Label progressLabel = new Label("读至 第 " + lastPage + " 页");
+        Label progressLabel = new Label("Read to page " + lastPage + "");
         progressLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
         card.getChildren().addAll(titleLabel, progressLabel);

@@ -12,7 +12,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.List;
 
 /**
- * 生词本界面，展示所有生词，点击显示原文语境，可调用AI深度解析或删除
+ * Vocabulary screen that shows saved words, source context, AI analysis, and deletion
  */
 public class VocabBookScreen {
     private GuiMain app;
@@ -29,10 +29,10 @@ public class VocabBookScreen {
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setPadding(new Insets(20, 30, 20, 30));
         topBar.setStyle("-fx-background-color: #0f172a; -fx-border-color: transparent transparent #334155 transparent; -fx-border-width: 1px;");
-        Button backBtn = new Button("返回书架", new FontIcon("fas-chevron-left"));
+        Button backBtn = new Button("Back to Library", new FontIcon("fas-chevron-left"));
         backBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER);
         backBtn.setOnAction(e -> app.navigateTo(new LibraryScreen(app).build()));
-        Label title = new Label("沉浸式生词本", new FontIcon("fas-book-open"));
+        Label title = new Label("Immersive Vocabulary Book", new FontIcon("fas-book-open"));
         title.getStyleClass().add(Styles.TITLE_2);
         topBar.getChildren().addAll(backBtn, title);
         root.setTop(topBar);
@@ -59,7 +59,7 @@ public class VocabBookScreen {
         detailsBox.setPadding(new Insets(30));
         detailsBox.setStyle("-fx-background-color: #0f172a;");
 
-        Label wordLabel = new Label("请选择生词");
+        Label wordLabel = new Label("Select a word");
         wordLabel.getStyleClass().addAll(Styles.TITLE_1);
         wordLabel.setTextFill(Color.web("#38bdf8"));
 
@@ -71,9 +71,9 @@ public class VocabBookScreen {
 
         HBox actionBox = new HBox(15);
         actionBox.setAlignment(Pos.CENTER_LEFT);
-        Button aiResolveBtn = new Button("呼叫 AI 深度解析语境", new FontIcon("fas-brain"));
+        Button aiResolveBtn = new Button("Run AI Context Analysis", new FontIcon("fas-brain"));
         aiResolveBtn.getStyleClass().addAll(Styles.ACCENT);
-        Button deleteBtn = new Button("擦除此神经元", new FontIcon("fas-trash"));
+        Button deleteBtn = new Button("Delete This Word", new FontIcon("fas-trash"));
         deleteBtn.getStyleClass().addAll(Styles.DANGER);
         actionBox.getChildren().addAll(aiResolveBtn, deleteBtn);
         actionBox.setVisible(false);
@@ -85,7 +85,7 @@ public class VocabBookScreen {
         VBox.setVgrow(aiExplainArea, Priority.ALWAYS);
 
         detailsBox.getChildren().addAll(wordLabel,
-                new Label("【原始语境】", new FontIcon("fas-quote-left")),
+                new Label("Source Context", new FontIcon("fas-quote-left")),
                 contextArea, actionBox, aiExplainArea);
 
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -93,7 +93,7 @@ public class VocabBookScreen {
                 wordLabel.setText(newVal.word);
                 String displayContext = newVal.context;
                 if (displayContext != null) {
-                    String[] sentences = displayContext.split("(?<=[.!?。！?])\\s*|\n+");
+                    String[] sentences = displayContext.split("(?<=[.!?])\\s*|\n+");
                     for (String sentence : sentences) {
                         if (sentence.toLowerCase().contains(newVal.word.toLowerCase())) {
                             displayContext = sentence.trim();
@@ -101,7 +101,7 @@ public class VocabBookScreen {
                         }
                     }
                 }
-                String highlightContext = displayContext.replaceAll("(?i)(" + newVal.word + ")", "【 $1 】");
+                String highlightContext = displayContext.replaceAll("(?i)(" + newVal.word + ")", "[ $1 ]");
                 contextArea.setText(highlightContext);
                 aiExplainArea.setText("");
                 actionBox.setVisible(true);
@@ -113,7 +113,7 @@ public class VocabBookScreen {
         aiResolveBtn.setOnAction(e -> {
             DatabaseManager.Flashcard selected = listView.getSelectionModel().getSelectedItem();
             if (selected == null) return;
-            aiExplainArea.setText("正在解析中...");
+            aiExplainArea.setText("Analyzing...");
             new Thread(() -> {
                 String exp = AiClient.contextualLookup(selected.word, selected.context, false, app.getUserLearningGoal());
                 Platform.runLater(() -> aiExplainArea.setText(exp));
@@ -125,9 +125,9 @@ public class VocabBookScreen {
             if (selected == null) return;
 
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                    "确定要将【" + selected.word + "】从记忆网络中永久抹除吗？",
+                    "Are you sure you want to permanently delete " + selected.word + " from the memory network?",
                     ButtonType.YES, ButtonType.NO);
-            alert.setHeaderText("危险操作警报");
+            alert.setHeaderText("Confirm Deletion");
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.setStyle("-fx-background-color: #1e293b; -fx-text-fill: #f8fafc;");
             dialogPane.lookupAll(".label").forEach(node -> ((Label) node).setTextFill(Color.web("#f8fafc")));
@@ -139,7 +139,7 @@ public class VocabBookScreen {
                     listView.getItems().setAll(DatabaseManager.getFlashcards());
 
                     if (listView.getItems().isEmpty()) {
-                        wordLabel.setText("生词本已清空");
+                        wordLabel.setText("Vocabulary book is empty");
                         contextArea.clear();
                         aiExplainArea.clear();
                         actionBox.setVisible(false);

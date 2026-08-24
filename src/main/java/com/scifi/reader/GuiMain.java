@@ -13,11 +13,11 @@ public class GuiMain extends Application {
     private Stage primaryStage;
     private Scene mainScene;
 
-    // 阅读器需要的全局状态
+    // Global reader state
     private String currentBookId = null;
     private int currentPage = 1;
     private int totalPages = 1;
-    private String userLearningGoal = "深度解析";
+    private String userLearningGoal = "Deep analysis";
     private long pageLoadTime = System.currentTimeMillis();
 
     @Override
@@ -25,20 +25,20 @@ public class GuiMain extends Application {
         this.primaryStage = primaryStage;
         Application.setUserAgentStylesheet(new NordDark().getUserAgentStylesheet());
 
-        // 初始化数据库（主数据库和封面数据库）
+        // Initialize databases: main data and covers
         DatabaseManager.initDatabase();
-        DatabaseManager.initCoverDatabase(); // 新增：初始化封面数据库
+        DatabaseManager.initCoverDatabase(); // Initialize the cover database
         DatabaseManager.importBooksFromFolder("book");
 
-        // 显示欢迎界面
+        // Show the welcome screen
         navigateTo(new WelcomeScreen(this).build());
 
-        primaryStage.setTitle("NovaRead 新星阅读 - 基于AI驱动的智能深度阅读与知识学习系统 ");
+        primaryStage.setTitle("NovaRead - AI-powered deep reading and knowledge learning system");
         primaryStage.setScene(mainScene);
         primaryStage.show();
     }
     /**
-     * 切换场景
+     * Switches screens
      */
     public void navigateTo(Region targetScreen) {
         if (mainScene == null) {
@@ -50,7 +50,7 @@ public class GuiMain extends Application {
     }
 
     /**
-     * 执行 AI 任务，异步更新 TextArea
+     * Runs an AI task and updates the TextArea asynchronously
      */
     public void runAiTask(java.util.function.Supplier<String> aiCall, TextArea resultArea) {
         resultArea.setText("......");
@@ -61,7 +61,7 @@ public class GuiMain extends Application {
     }
 
     /**
-     * 将 Color 转换为十六进制字符串
+     * Converts Color to a hex string
      */
     public String toHexString(javafx.scene.paint.Color color) {
         return String.format("#%02X%02X%02X",

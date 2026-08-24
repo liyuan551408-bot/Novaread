@@ -95,7 +95,7 @@ public class ReaderScreen {
         navBar.setPadding(new Insets(10, 20, 10, 20));
         navBar.setStyle("-fx-background-color: #0f172a;");
 
-        Button backBtn = new Button("返回书架", new FontIcon("fas-chevron-left"));
+        Button backBtn = new Button("Back to Library", new FontIcon("fas-chevron-left"));
         backBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER);
         backBtn.setOnAction(e -> {
             if (autoScrollTimer != null) autoScrollTimer.stop();
@@ -148,7 +148,7 @@ public class ReaderScreen {
         fontSizeSpinner = new Spinner<>(12, 48, 18);
         fontSizeSpinner.setPrefWidth(80);
 
-        // 加载保存的设置
+        // Load saved settings
         String savedBg = DatabaseManager.getSetting(SETTING_BG_COLOR, "#2A2A2A");
         String savedFontColor = DatabaseManager.getSetting(SETTING_FONT_COLOR, "#D4D4D4");
         int savedFontSize = Integer.parseInt(DatabaseManager.getSetting(SETTING_FONT_SIZE, "18"));
@@ -162,9 +162,9 @@ public class ReaderScreen {
         fontSizeSpinner.valueProperty().addListener((obs, oldVal, newVal) -> applyCustomAppearance());
 
         bar.getChildren().addAll(
-                new Label("纸张:"), bgColorPicker,
-                new Label("字体:"), fontColorPicker,
-                new Label("字号:"), fontSizeSpinner
+                new Label("Page:"), bgColorPicker,
+                new Label("Text:"), fontColorPicker,
+                new Label("Size:"), fontSizeSpinner
         );
         return bar;
     }
@@ -173,8 +173,8 @@ public class ReaderScreen {
         HBox paginationBox = new HBox(15);
         paginationBox.setAlignment(Pos.CENTER);
 
-        Button prevBtn = new Button("上一页", new FontIcon("fas-arrow-left"));
-        Button nextBtn = new Button("下一页");
+        Button prevBtn = new Button("Previous Page", new FontIcon("fas-arrow-left"));
+        Button nextBtn = new Button("Next Page");
         nextBtn.setGraphic(new FontIcon("fas-arrow-right"));
         nextBtn.setContentDisplay(ContentDisplay.RIGHT);
         prevBtn.getStyleClass().add(Styles.FLAT);
@@ -190,11 +190,11 @@ public class ReaderScreen {
             if (app.getCurrentPage() < app.getTotalPages()) loadNextOrPrevPage(app.getCurrentPage() + 1);
         });
 
-        autoScrollBtn = new ToggleButton("自动阅读", new FontIcon("fas-play"));
+        autoScrollBtn = new ToggleButton("Auto Read", new FontIcon("fas-play"));
         autoScrollBtn.getStyleClass().addAll(Styles.ACCENT);
         scrollSpeedSpinner = new Spinner<>(1, 10, 3);
         scrollSpeedSpinner.setPrefWidth(70);
-        Label speedLabel = new Label("滚速:");
+        Label speedLabel = new Label("Speed:");
         speedLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
         setupWebAutoScrollLogic();
@@ -210,36 +210,36 @@ public class ReaderScreen {
         rightPanel.setPrefWidth(420);
         rightPanel.setStyle("-fx-background-color: #1e293b; -fx-border-color: transparent transparent transparent #334155; -fx-border-width: 1px;");
 
-        Label aiLabel = new Label("AI 宏观指挥中心", new FontIcon("fas-brain"));
+        Label aiLabel = new Label("AI Command Center", new FontIcon("fas-brain"));
         aiLabel.getStyleClass().addAll(Styles.TITLE_3);
 
         HBox macroBox = new HBox(10);
-        Button simplifyBtn = new Button("降维解析", new FontIcon("fas-magic"));
+        Button simplifyBtn = new Button("Simplify Text", new FontIcon("fas-magic"));
         simplifyBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(simplifyBtn, Priority.ALWAYS);
-        Button authorBtn = new Button("连线原著作者", new FontIcon("fas-pen-nib"));
+        Button authorBtn = new Button("Ask the Author", new FontIcon("fas-pen-nib"));
         authorBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(authorBtn, Priority.ALWAYS);
         macroBox.getChildren().addAll(simplifyBtn, authorBtn);
 
         HBox ragBox = new HBox(10);
-        Button saveMemoryBtn = new Button("抽取入库", new FontIcon("fas-save"));
+        Button saveMemoryBtn = new Button("Save Memory", new FontIcon("fas-save"));
         saveMemoryBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(saveMemoryBtn, Priority.ALWAYS);
-        Button sparkBtn = new Button("扫描跨书共鸣", new FontIcon("fas-bolt"));
+        Button sparkBtn = new Button("Scan Cross-Book Links", new FontIcon("fas-bolt"));
         sparkBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(sparkBtn, Priority.ALWAYS);
         ragBox.getChildren().addAll(saveMemoryBtn, sparkBtn);
 
-        Button toggleShelfBtn = new Button("加入/移出星标书架", new FontIcon("fas-star"));
+        Button toggleShelfBtn = new Button("Toggle Starred Shelf", new FontIcon("fas-star"));
         toggleShelfBtn.setMaxWidth(Double.MAX_VALUE);
 
-        Label graphLabel = new Label("动态关系图谱 (划词右键触发)", new FontIcon("fas-project-diagram"));
+        Label graphLabel = new Label("Dynamic Relationship Graph (select text and right-click)", new FontIcon("fas-project-diagram"));
         graphLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
         Button expandBtn = new Button("", new FontIcon("fas-expand"));
         expandBtn.getStyleClass().addAll(Styles.BUTTON_CIRCLE, Styles.FLAT);
-        expandBtn.setTooltip(new Tooltip("展开全息投影屏"));
+        expandBtn.setTooltip(new Tooltip("Expand graph view"));
 
         Region graphSpacer = new Region();
         HBox.setHgrow(graphSpacer, Priority.ALWAYS);
@@ -254,7 +254,7 @@ public class ReaderScreen {
 
         expandBtn.setOnAction(event -> {
             Stage fullScreenStage = new Stage();
-            fullScreenStage.setTitle("NovaRead - 神经矩阵全息投影图谱");
+            fullScreenStage.setTitle("NovaRead - Neural Matrix Graph View");
             WebView fullWebView = new WebView();
             WebEngine fullWebEngine = fullWebView.getEngine();
             fullWebEngine.loadContent(GRAPH_HTML);
@@ -267,9 +267,9 @@ public class ReaderScreen {
             fullScreenStage.show();
         });
 
-        Label outputLabel = new Label("输出信道:");
+        Label outputLabel = new Label("Output Channel:");
         outputLabel.getStyleClass().add(Styles.TEXT_MUTED);
-        aiResultArea = new TextArea("待机中...\n在左侧阅读区选中文字并【右键】，可触发微观分析或生成神经图谱。");
+        aiResultArea = new TextArea("Standby...\nSelect text in the reading area and right-click to run analysis or generate a graph.");
         aiResultArea.setWrapText(true);
         aiResultArea.setEditable(false);
         aiResultArea.setStyle("-fx-font-family: 'Consolas', monospace; -fx-text-fill: #a3be8c;");
@@ -282,8 +282,8 @@ public class ReaderScreen {
         authorBtn.setOnAction(e -> {
             String fullText = getFullWebText();
             TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("跨越时空访谈");
-            dialog.setHeaderText("呼叫作者...");
+            dialog.setTitle("Author Interview");
+            dialog.setHeaderText("Ask the author...");
             dialog.showAndWait().ifPresent(msg -> {
                 if (!msg.trim().isEmpty())
                     app.runAiTask(() -> AiClient.authorChat(fullText, msg), aiResultArea);
@@ -293,7 +293,7 @@ public class ReaderScreen {
             String fullText = getFullWebText();
             app.runAiTask(() -> {
                 String compressed = AiClient.compressMemoryForRag(fullText);
-                return DatabaseManager.saveMemoryChunk(app.getCurrentBookId(), compressed) + "\n\n提取内容：" + compressed;
+                return DatabaseManager.saveMemoryChunk(app.getCurrentBookId(), compressed) + "\n\nExtracted content: " + compressed;
             }, aiResultArea);
         });
         sparkBtn.setOnAction(e -> {
@@ -303,7 +303,7 @@ public class ReaderScreen {
         toggleShelfBtn.setOnAction(e -> {
             boolean current = DatabaseManager.isInBookshelf(app.getCurrentBookId());
             DatabaseManager.setInBookshelf(app.getCurrentBookId(), !current);
-            app.runAiTask(() -> current ? "已从星标书架移出。" : "已加入星标书架。", aiResultArea);
+            app.runAiTask(() -> current ? "Removed from the starred shelf." : "Added to the starred shelf.", aiResultArea);
         });
 
         rightPanel.getChildren().addAll(aiLabel, macroBox, ragBox, toggleShelfBtn,
@@ -315,10 +315,10 @@ public class ReaderScreen {
         ContextMenu contextMenu = new ContextMenu();
         final String[] lastSelectedText = {""};
 
-        MenuItem translateItem = new MenuItem("极速翻译", new FontIcon("fas-globe"));
+        MenuItem translateItem = new MenuItem("Quick Translate", new FontIcon("fas-globe"));
         translateItem.setOnAction(e -> app.runAiTask(() -> AiClient.translateText(lastSelectedText[0]), aiResultArea));
 
-        MenuItem lookupItem = new MenuItem("动态语境查词", new FontIcon("fas-search"));
+        MenuItem lookupItem = new MenuItem("Contextual Lookup", new FontIcon("fas-search"));
         lookupItem.setOnAction(e -> {
             String fullText = getFullWebText();
             app.runAiTask(() -> AiClient.contextualLookup(lastSelectedText[0], fullText,
@@ -326,12 +326,12 @@ public class ReaderScreen {
                     app.getUserLearningGoal()), aiResultArea);
         });
 
-        MenuItem analyzeItem = new MenuItem("句法结构手术", new FontIcon("fas-sitemap"));
+        MenuItem analyzeItem = new MenuItem("Syntax Analysis", new FontIcon("fas-sitemap"));
         analyzeItem.setOnAction(e -> app.runAiTask(() -> AiClient.analyzeStructure(lastSelectedText[0]), aiResultArea));
 
-        MenuItem graphItem = new MenuItem("生成交互式图谱", new FontIcon("fas-project-diagram"));
+        MenuItem graphItem = new MenuItem("Generate Interactive Graph", new FontIcon("fas-project-diagram"));
         graphItem.setOnAction(e -> {
-            aiResultArea.setText("算力调度中：正在抽取多维实体神经元，构建结构化数据...");
+            aiResultArea.setText("Processing: extracting entities and building structured graph data...");
             new Thread(() -> {
                 String jsonResult = AiClient.generateGraphJson(lastSelectedText[0]);
                 Platform.runLater(() -> {
@@ -339,15 +339,15 @@ public class ReaderScreen {
                         String safeJson = jsonResult.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ").replace("\r", "");
                         lastGraphJson = safeJson;
                         graphWebEngine.executeScript("renderNewGraph('" + safeJson + "');");
-                        aiResultArea.setText("实体链路解析完毕！您可以直接拖拽，或点击右上角【放大按钮】开启全息投影。");
+                        aiResultArea.setText("Entity links parsed. You can drag nodes directly or use the expand button for a larger view.");
                     } catch (Exception ex) {
-                        aiResultArea.setText("前端图谱渲染崩溃！\n报错信息: " + ex.getMessage());
+                        aiResultArea.setText("Graph rendering failed.\nError: " + ex.getMessage());
                     }
                 });
             }).start();
         });
 
-        MenuItem saveVocabItem = new MenuItem("加入 SRS 记忆网络", new FontIcon("fas-brain"));
+        MenuItem saveVocabItem = new MenuItem("Add to SRS Memory", new FontIcon("fas-brain"));
         saveVocabItem.setOnAction(e -> {
             String fullText = getFullWebText();
             app.runAiTask(() -> DatabaseManager.saveFlashcard(lastSelectedText[0], fullText,
@@ -417,13 +417,13 @@ public class ReaderScreen {
 
         autoScrollBtn.setOnAction(e -> {
             if (autoScrollBtn.isSelected()) {
-                autoScrollBtn.setText("暂停阅读");
+                autoScrollBtn.setText("Pause Reading");
                 ((FontIcon) autoScrollBtn.getGraphic()).setIconLiteral("fas-pause");
                 lastScrollTime = 0;
                 scrollAccumulator = 0.0;
                 autoScrollTimer.start();
             } else {
-                autoScrollBtn.setText("自动阅读");
+                autoScrollBtn.setText("Auto Read");
                 ((FontIcon) autoScrollBtn.getGraphic()).setIconLiteral("fas-play");
                 autoScrollTimer.stop();
                 isWaitingToTurnPage = false;
@@ -472,7 +472,7 @@ public class ReaderScreen {
             // ignore
         }
 
-        // 保存用户偏好
+        // Save user preferences
         DatabaseManager.saveSetting(SETTING_BG_COLOR, app.toHexString(bgColorPicker.getValue()));
         DatabaseManager.saveSetting(SETTING_FONT_COLOR, app.toHexString(fontColorPicker.getValue()));
         DatabaseManager.saveSetting(SETTING_FONT_SIZE, String.valueOf(fontSizeSpinner.getValue()));

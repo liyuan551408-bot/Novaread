@@ -18,7 +18,7 @@ public class DatabaseManager {
     private static final String COVERS_DB_URL = "jdbc:sqlite:covers.db";
     private static final int PARAGRAPHS_PER_PAGE = 25;
 
-    // ========================= 主数据库初始化 =========================
+    // ========================= Main database initialization =========================
     public static void initDatabase() {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement()) {
@@ -27,7 +27,7 @@ public class DatabaseManager {
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_book_page ON paragraphs(book_id, page_number)");
             stmt.execute("CREATE TABLE IF NOT EXISTS flashcards (word TEXT PRIMARY KEY, context TEXT, lookups INTEGER, dwell_time REAL, difficulty REAL)");
 
-            // 动态升级突触考核字段
+            // Dynamically upgrade flashcard quiz fields
             try { stmt.execute("ALTER TABLE flashcards ADD COLUMN last_review_time INTEGER DEFAULT 0"); } catch (SQLException ignore) {}
             try { stmt.execute("ALTER TABLE flashcards ADD COLUMN streak INTEGER DEFAULT 0"); } catch (SQLException ignore) {}
             try { stmt.execute("ALTER TABLE flashcards ADD COLUMN opt_a TEXT"); } catch (SQLException ignore) {}
@@ -46,14 +46,14 @@ public class DatabaseManager {
                     "total_read_time REAL DEFAULT 0, " +
                     "prompt_ignored INTEGER DEFAULT 0)");
 
-            // 新增用户设置表
+            // Add user settings table
             stmt.execute("CREATE TABLE IF NOT EXISTS user_settings (key TEXT PRIMARY KEY, value TEXT)");
 
-            System.out.println("主数据库初始化完毕。");
+            System.out.println("Main database initialized.");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // ========================= 用户设置方法 =========================
+    // ========================= User settings methods =========================
     public static String getSetting(String key, String defaultValue) {
         String sql = "SELECT value FROM user_settings WHERE key = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -81,7 +81,7 @@ public class DatabaseManager {
         }
     }
 
-    // ========================= 封面数据库初始化 =========================
+    // ========================= Cover database initialization =========================
     public static void initCoverDatabase() {
         try (Connection conn = DriverManager.getConnection(COVERS_DB_URL);
              Statement stmt = conn.createStatement()) {
@@ -90,11 +90,11 @@ public class DatabaseManager {
                     "image_data BLOB, " +
                     "mime_type TEXT, " +
                     "import_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
-            System.out.println("封面数据库初始化完毕。");
+            System.out.println("Cover database initialized.");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // ========================= 封面管理方法 =========================
+    // ========================= Cover management methods =========================
     public static void saveCover(String bookId, byte[] imageData, String mimeType) {
         if (bookId == null || imageData == null) return;
         String sql = "INSERT OR REPLACE INTO covers (book_id, image_data, mime_type) VALUES (?, ?, ?)";
@@ -165,7 +165,7 @@ public class DatabaseManager {
                 PreparedStatement checkStmt = conn.prepareStatement("SELECT id FROM books WHERE id = ?");
                 checkStmt.setString(1, bookId);
                 if (checkStmt.executeQuery().next()) {
-                    System.out.println("书籍已存在，跳过：" + bookId);
+                    System.out.println("Book already exists, skipping: " + bookId);
                     continue;
                 }
 
@@ -180,7 +180,7 @@ public class DatabaseManager {
                         while ((line = reader.readLine()) != null) {
                             if (!line.trim().isEmpty()) validParagraphs.add(line.trim());
                         }
-                        System.out.println("成功使用编码 " + encoding + " 读取文件：" + file.getName());
+                        System.out.println("Successfully read with encoding " + encoding + ": " + file.getName());
                         break;
                     } catch (IOException e) {
                         lastException = e;
@@ -188,13 +188,13 @@ public class DatabaseManager {
                 }
 
                 if (validParagraphs == null) {
-                    System.err.println("所有编码尝试均失败：" + file.getName());
+                    System.err.println("All encoding attempts failed: " + file.getName());
                     if (lastException != null) lastException.printStackTrace();
                     continue;
                 }
 
                 if (validParagraphs.isEmpty()) {
-                    System.err.println("文件无有效段落，跳过：" + file.getName());
+                    System.err.println("File has no valid paragraphs, skipping: " + file.getName());
                     continue;
                 }
 
@@ -217,14 +217,14 @@ public class DatabaseManager {
                     insertPara.executeBatch();
                     conn.commit();
                     conn.setAutoCommit(true);
-                    System.out.println("导入成功：" + bookId);
+                    System.out.println("Import succeeded: " + bookId);
                 } catch (SQLException e) {
                     try {
                         conn.rollback();
                     } catch (SQLException rollbackEx) {
                         rollbackEx.printStackTrace();
                     }
-                    System.err.println("数据库操作失败：" + file.getName() + "，原因：" + e.getMessage());
+                    System.err.println("Database operation failed: " + file.getName() + ", reason: " + e.getMessage());
                     e.printStackTrace();
                     conn.setAutoCommit(true);
                 }
@@ -335,7 +335,7 @@ public class DatabaseManager {
                 if (dbTitle != null && !dbTitle.trim().isEmpty()) title = dbTitle;
             }
         } catch (SQLException e) {
-            System.out.println("获取书名失败: " + e.getMessage());
+            System.out.println("Failed to get book title: " + e.getMessage());
         }
         return title;
     }
@@ -350,9 +350,9 @@ public class DatabaseManager {
 
             PreparedStatement query = conn.prepareStatement("SELECT difficulty FROM flashcards WHERE word = ?");
             query.setString(1, word); ResultSet rs = query.executeQuery();
-            if (rs.next()) return String.format("SRS 更新成功！\n生词：【%s】\n系统已在后台为您自动构建考核题库。", word);
-        } catch (SQLException e) { return "SRS 存储失败：" + e.getMessage(); }
-        return "保存完成。";
+            if (rs.next()) return String.format("SRS update succeeded!\nWord: %s\nThe quiz bank is being built in the background.", word);
+        } catch (SQLException e) { return "SRS save failed: " + e.getMessage(); }
+        return "Saved.";
     }
 
     private static void asyncGenerateAndStoreQuiz(String word, String context) {
@@ -371,22 +371,22 @@ public class DatabaseManager {
 
     public static String saveMemoryChunk(String bookId, String text) {
         double[] vector = AiClient.getEmbedding(text);
-        if (vector.length == 0) return "记忆灌注失败：向量降维异常，请检查网络或配置。";
+        if (vector.length == 0) return "Memory injection failed: vector generation failed. Check network or configuration.";
         String vectorJson = new Gson().toJson(vector);
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement stmt = conn.prepareStatement("INSERT INTO memory_chunks (book_id, chunk_text, vector_json) VALUES (?, ?, ?)")) {
-            stmt.setString(1, bookId != null ? bookId : "未知书籍");
+            stmt.setString(1, bookId != null ? bookId : "Unknown book");
             stmt.setString(2, text);
             stmt.setString(3, vectorJson);
             stmt.executeUpdate();
-            return "记忆提取成功：已通过高维空间映射存入突触网络。";
-        } catch (SQLException e) { return "记忆录入失败：" + e.getMessage(); }
+            return "Memory saved: the chunk has been mapped into the semantic memory network.";
+        } catch (SQLException e) { return "Memory save failed: " + e.getMessage(); }
     }
 
     public static String getSemanticContext(String currentText, int topK) {
         double[] queryVector = AiClient.getEmbedding(currentText);
-        if (queryVector.length == 0) return "记忆提取失败：无法生成空间探针。";
+        if (queryVector.length == 0) return "Memory retrieval failed: unable to generate a semantic probe.";
 
         class MemoryHit implements Comparable<MemoryHit> {
             String content; double score;
@@ -408,7 +408,7 @@ public class DatabaseManager {
                 double similarity = AiClient.cosineSimilarity(queryVector, memVector);
 
                 if (similarity > 0.45) {
-                    String memStr = "《" + rs.getString("book_id") + "》：" + rs.getString("chunk_text");
+                    String memStr = "[" + rs.getString("book_id") + "]: " + rs.getString("chunk_text");
                     hits.add(new MemoryHit(memStr, similarity));
                 }
             }
@@ -419,11 +419,11 @@ public class DatabaseManager {
         while (!hits.isEmpty() && count < topK) {
             MemoryHit hit = hits.poll();
             contextBuilder.append(count + 1).append(". ").append(hit.content)
-                    .append(" (脑电波共鸣率: ").append(String.format("%.1f%%", hit.score * 100)).append(")\n");
+                    .append(" (semantic match: ").append(String.format("%.1f%%", hit.score * 100)).append(")\n");
             count++;
         }
 
-        return contextBuilder.length() > 0 ? contextBuilder.toString() : "神经游走结束，暂未扫描到关联记忆。";
+        return contextBuilder.length() > 0 ? contextBuilder.toString() : "Semantic scan finished. No related memories were found.";
     }
 
     public static boolean isInBookshelf(String bookId) {
