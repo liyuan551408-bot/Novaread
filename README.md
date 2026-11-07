@@ -2,7 +2,15 @@
 
 **NovaRead** is an AI-powered desktop reading and learning application built with **Java, Maven, and JavaFX**.
 
-It is designed to help users understand difficult text, learn vocabulary, and connect ideas while reading. The application combines a traditional desktop reader with AI-assisted features such as translation, contextual vocabulary explanation, sentence analysis, text simplification, semantic retrieval, and interactive knowledge graphs.
+It is designed to help users understand difficult text, learn vocabulary, and connect ideas while reading. The application combines a local text reader with AI-assisted translation, contextual vocabulary explanation, sentence analysis, text simplification, semantic retrieval, and interactive knowledge graphs. Local reading data is stored in SQLite; AI features need a Zhipu API key and internet access.
+
+## Start here
+
+1. Put a `.txt` book in the `book/` directory.
+2. Set `ZHIPU_API_KEY` in the environment, or create an ignored `.env` file in the repository root with `ZHIPU_API_KEY=your-key`. The environment variable takes precedence.
+3. Run `mvn javafx:run` from the repository root.
+4. Open the book, select a passage, and try an AI action. Save a word to try the vocabulary review flow.
+
 
 ## Features
 
@@ -192,9 +200,9 @@ LLM Response
 
 You will need:
 
-- Java Development Kit
+- JDK 11 or later (the Maven compiler target is Java 11)
 - Maven
-- Internet access for AI API features
+- Internet access and a Zhipu API key for AI features
 
 ### Build
 
@@ -206,9 +214,7 @@ mvn clean package
 
 ### Run
 
-Depending on the Maven configuration used by the project, run the configured JavaFX application from your IDE or Maven.
-
-For example, if the JavaFX Maven plugin is configured:
+The JavaFX Maven plugin is configured in `pom.xml`. Start the application with:
 
 ```bash
 mvn javafx:run
@@ -227,10 +233,10 @@ AI features require a Zhipu API key. Configure it with the `ZHIPU_API_KEY` envir
 On Windows PowerShell:
 
 ```powershell
-setx ZHIPU_API_KEY "your-api-key"
+$env:ZHIPU_API_KEY = "your-api-key"
 ```
 
-For local development, you can also create an ignored `.env` file in the project root:
+For local development, you can also create an ignored `.env` file in the project root. `AiClient` reads the environment variable first, then this file:
 
 ```text
 ZHIPU_API_KEY=your-api-key
@@ -268,21 +274,9 @@ NovaRead uses local SQLite databases to store application data such as:
 - Semantic memory
 - Book covers
 
-## Security Note
+## API key handling
 
-**Do not commit API keys to a public GitHub repository.**
-
-Before publishing the project, AI credentials should be removed from the Java source code and loaded from an environment variable or another secure configuration method.
-
-Recommended approach:
-
-```java
-String apiKey = System.getenv("ZHIPU_API_KEY");
-```
-
-Then configure the environment variable on your local machine rather than storing the key directly in the repository.
-
-If an API key has already been committed publicly, revoke it and create a new one.
+`AiClient` already loads `ZHIPU_API_KEY` from the environment or an ignored root `.env` file. Do not commit a real key. If one has ever been published, revoke it and generate a replacement.
 
 ## What I Learned
 
@@ -305,7 +299,7 @@ Building NovaRead gave me practical experience with:
 
 Possible next steps include:
 
-- Move all API configuration to environment variables
+- Make AI provider settings configurable without editing Java source
 - Improve exception handling and user-facing error messages
 - Add automated tests
 - Add more document formats such as PDF and EPUB
@@ -317,7 +311,7 @@ Possible next steps include:
 
 ## Project Status
 
-NovaRead is currently a working prototype and is continuing to be improved.
+NovaRead is a working prototype. The repository has no automated test suite or ready-to-install desktop release. The Maven shade manifest names `com.scifi.reader.Launcher`, but that class is not in the current source tree; use `mvn javafx:run` as the documented launch method.
 
 The project was created to explore how **Java application development and generative AI can be combined to build a practical learning tool**.
 
